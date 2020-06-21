@@ -27,8 +27,6 @@
             const current = tabs[0];
 
             chrome.tabs.sendMessage(current.id, 'start_download', (data) => {
-                console.log(data)
-
                 if (data.has_download) {
                     chrome.downloads.download({
                         url: data.link, 
