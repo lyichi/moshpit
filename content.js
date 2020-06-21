@@ -12,12 +12,18 @@ for (item of section_items) {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const download = document.querySelector('.download');
-    const download_name = download.getAttribute('data-x-origin-download-name').replace(/\d*- /gi, '');
-    const title = `${index + 1} - ${download_name}`;
-    const link = download.href;
 
-    index++;
-    section_items[index].querySelector('.item').click();
-    
-    sendResponse({title, link});
+    if (download) {
+        const download_name = download.getAttribute('data-x-origin-download-name').replace(/\d.*- /gi, '');
+        const title = `${index + 1} - ${download_name}`;
+        const link = download.href;
+
+        index++;
+        section_items[index].querySelector('.item').click();
+        sendResponse({has_download: true, title, link});
+    } else {
+        index++;
+        section_items[index].querySelector('.item').click(); 
+        sendResponse({has_download: false})
+    }
 });

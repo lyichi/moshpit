@@ -27,12 +27,18 @@
             const current = tabs[0];
 
             chrome.tabs.sendMessage(current.id, 'start_download', (data) => {
-                chrome.downloads.download({
-                    url: data.link, 
-                    filename: data.title, 
-                    conflictAction: 'uniquify', 
-                    saveAs: false
-                });
+                console.log(data)
+
+                if (data.has_download) {
+                    chrome.downloads.download({
+                        url: data.link, 
+                        filename: data.title, 
+                        conflictAction: 'uniquify', 
+                        saveAs: false
+                    });
+                } else {
+                    setTimeout(startDownload, 5000);
+                }
             });
         });
     }
