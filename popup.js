@@ -1,43 +1,49 @@
 (() => {
-    document.querySelector('#download-button').addEventListener('click', startDownload, false);
+	document
+		.querySelector("#download-button")
+		.addEventListener("click", startDownload, false);
 
-    let start_time = null;
-    chrome.downloads.onCreated.addListener((downloadItem) => {
-        start_time = new Date(downloadItem.startTime);
-    });
+	let start_time = null;
+	chrome.downloads.onCreated.addListener((downloadItem) => {
+		start_time = new Date(downloadItem.startTime);
+	});
 
-    chrome.downloads.onChanged.addListener((delta) => {
-        if (delta.endTime) {
-            const end_time = new Date(delta.endTime.current);
-            
-            if (delta.state && delta.state.current == "complete") {
-                difference = (end_time - start_time) / 1000;
+	chrome.downloads.onChanged.addListener((delta) => {
+		if (delta.endTime) {
+			const end_time = new Date(delta.endTime.current);
 
-                if (difference < 5) {
-                    setTimeout(startDownload, 5000);
-                } else {
-                    startDownload();
-                }
-            }
-        }
-    });
+			if (delta.state && delta.state.current == "complete") {
+				difference = (end_time - start_time) / 1000;
 
-    function startDownload () {
-        chrome.tabs.query({highlighted: true}, (tabs) => {
-            const current = tabs[0];
+				if (difference < 5) {
+					setTimeout(startDownload, 5000);
+				} else {
+					startDownload();
+				}
+			}
+		}
+	});
 
-            chrome.tabs.sendMessage(current.id, 'start_download', (data) => {
-                if (data.has_download) {
-                    chrome.downloads.download({
-                        url: data.link, 
-                        filename: data.title, 
-                        conflictAction: 'uniquify', 
-                        saveAs: false
-                    });
-                } else {
-                    setTimeout(startDownload, 5000);
-                }
-            });
-        });
-    }
+	function startDownload() {
+		chrome.tabs.query({ highlighted: true }, (tabs) => {
+			const current = tabs[0];
+
+			chrome.tabs.sendMessage(current.id, "start_download", (data) => {
+				if (!data.download_finished) {
+					if (data.has_download) {
+						chrome.downloads.download({
+							url: data.link,
+							filename: data.title,
+							conflictAction: "uniquify",
+							saveAs: false,
+						});
+					} else {
+						if (!data.is_last) {
+							setTimeout(startDownload, 5000);
+						}
+					}
+				}
+			});
+		});
+	}
 })();
